@@ -82,6 +82,27 @@ function DocGist($) {
             $('img[src ^= "/"]', $content).each(function(){
                 this.src = siteBaseLocation + this.getAttribute('src');
             });
+            var a = document.createElement('a');
+            $('a[href]', $content).each(function(){
+                var href = this.getAttribute('href');
+                var resolvedUrl;
+                if (href.length > 0 && href.substr(0,4) !== 'http') {
+                    if (href.charAt(0) === '/') {
+                        resolvedUrl = siteBaseLocation + href;
+                    } else {
+                        a.setAttribute('href', siteBaseLocation + '/' + href);
+                        resolvedUrl = a.href;
+                    }
+                    var parts = href.split('1');
+                    if (parts.length > 1) {
+                        var ext = parts.pop().toLowerCase();
+                        if (ext === 'adoc' || ext === 'txt' || ext === 'asciidoc') {
+
+                        }
+                    }
+                }
+                this.href = siteBaseLocation + this.getAttribute('href');
+            });
             $('a[href ^= "/"]', $content).each(function(){
                 this.href = siteBaseLocation + this.getAttribute('href');
             });

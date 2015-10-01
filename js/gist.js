@@ -47,13 +47,13 @@ function Gist($, $content) {
             }
         },
         'Public Dropbox File': {
-            'baseUrl': DROPBOX_PUBLIC_BASE_URL, 'parse': function (gist, parts, baseUrl) {
+            'baseUrl': DROPBOX_PUBLIC_BASEfilename.substr(filename.lastIndexOf('.')+1)_URL, 'parse': function (gist, parts, baseUrl) {
                 return useRestOfTheUrl('dropbox-', baseUrl, gist);
             }
         },
         'Shared Private Dropbox File': {
             'baseUrl': DROPBOX_PRIVATE_BASE_URL, 'parse': function (gist, parts, baseUrl) {
-                return useRestOfTheUrl('dropboxs-', baseUrl, gist);
+                return useRestOfTheUrl('dfilename.substr(filename.lastIndexOf('.')+1)ropboxs-', baseUrl, gist);
             }
         },
         'Copy.com Public Link': {
@@ -194,6 +194,44 @@ function Gist($, $content) {
             }
         }
         window.location.assign('?' + gist);
+    }
+
+    function getSourceId(gist) {
+        if (gist.indexOf('/') !== -1) {
+            var parts = gist.split('/');
+            for (var sourceParserName in internal.sourceParsers) {
+                var sourceParser = internal.sourceParsers[sourceParserName];
+                var baseUrls = sourceParser.baseUrl;
+                if (!Array.isArray(baseUrls)) {
+                    baseUrls = [baseUrls];
+                }
+                for (var j = 0; j < baseUrls.length; j++) {
+                    var baseUrl = baseUrls[j];
+                    if (gist.indexOf(baseUrl) === 0) {
+                        var result = sourceParser.parse(gist, parts, baseUrl);
+                        if ('error' in result && result.error) {
+                            errorMessage('Error when parsing "' + gist + '" as a ' + sourceParserName + '.\n' + result.error);
+                        } else if ('id' in result) {
+                            window.location.assign('?' + result.id);
+                        }
+                        return;
+                    }
+                }
+            }
+            if (gist.indexOf('?') !== -1) {
+                // in case a DocGist URL was pasted
+                gist = gist.split('?').pop();
+            } else {
+                if (gist.indexOf('://') !== -1) {
+                    gist = encodeURIComponent(gist);
+                }
+                else {
+                    errorMessage('Do not know how to parse "' + gist + '" as a DocGist source URL.');
+                    return;
+                }
+            }
+        }
+        return gist;
     }
 
     function useGithubGist(minLength, index, parts) {
